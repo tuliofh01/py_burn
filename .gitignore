@@ -1,46 +1,90 @@
-# Python
+# ── Python ──────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
+*$py.class
 *.pyo
-*.egg-info/
-dist/
-build/
-.eggs/
-*.egg
+*.pyd
 .Python
+*.so
 
-# Virtual environment
+# Packaging / build
+build/
+dist/
+*.egg
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+*.manifest
+*.spec
+
+# ── Virtual environments ──────────────────────────────────────────────────
 .venv/
 venv/
+env/
+ENV/
 
-# IDE
+# ── Test / lint / type checkers ─────────────────────────────────────────────
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pytype/
+.dmypy.json
+dmypy.json
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# ── IDE / editors ───────────────────────────────────────────────────────────
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
+.project
+.pydevproject
+.settings/
 
-# Test / lint caches
-.pytest_cache/
-.ruff_cache/
-.coverage
-htmlcov/
+# ── Secrets / local env ─────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
 
-# ISO assets (multi-GB files — never version control)
-assets/
-
-# Temporary / build artifacts
+# ── Logs & temp files ───────────────────────────────────────────────────────
+*.log
 *.tmp
+*.bak
+
+# ── USB / image assets (large — never commit) ───────────────────────────────
+assets/
 *.iso
+*.img
 *.wim
 *.esd
 *.swm
+*.dmg
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# Tooling caches
+# ── Project tooling caches ──────────────────────────────────────────────────
 .omo/
 .codegraph/
 .zig-cache/
+
+# ── Legacy / abandoned layouts ───────────────────────────────────────────────
+src/
+
+# ── Lockfiles (Poetry is canonical for this repo) ───────────────────────────
+uv.lock
+
+# ── OS junk ─────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini

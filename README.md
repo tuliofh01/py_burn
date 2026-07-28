@@ -1,4 +1,4 @@
-<h1 align="center">pyburn</h1>
+<h1 align="center">py_burn</h1>
 
 <p align="center">
   <strong>
@@ -14,14 +14,19 @@
   />
 </p>
 
-<p align="center">
-  <code>██████╗ ██╗   ██╗██████╗ ██╗   ██╗██████╗ ███╗   ██╗</code><br>
-  <code>██╔══██╗╚██╗ ██╔╝██╔══██╗██║   ██║██╔══██╗████╗  ██║</code><br>
-  <code>██████╔╝ ╚████╔╝ ██████╔╝██║   ██║██████╔╝██╔██╗ ██║</code><br>
-  <code>██╔═══╝   ╚██╔╝  ██╔══██╗██║   ██║██╔══██╗██║╚██╗██║</code><br>
-  <code>██║        ██║   ██████╔╝╚██████╔╝██║  ██║██║ ╚████║</code><br>
-  <code>╚═╝        ╚═╝   ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝</code>
-</p>
+<div align="center">
+
+<pre>
+  ____  _   _ ____    _   _ ____  _   _ 
+ |  _ \| | | |  _ \  | | | | __ )| \ | |
+ | |_) | |_| | |_) | | | | |  _ \|  \| |
+ |  __/|  _  |  __/  | |_| | |_) | |\  |
+ |_|   |_| |_|_|      \___/|____/|_| \_|
+
+CLI USB writer — format · burn · boot
+</pre>
+
+</div>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge" alt="MIT open source license"></a>
@@ -34,9 +39,13 @@
   <a href="#-what-is-pyburn">About</a> ·
   <a href="#-features">Features</a> ·
   <a href="#-quick-start">Quick Start</a> ·
-  <a href="#-format-a-usb-drive-for-storage-tui-menu">Format USB</a> ·
+  <a href="#-format-a-usb-drive-for-storage-cli-menu">Format USB</a> ·
   <a href="#-create-a-bootable-linux-or-windows-usb">Burn ISO</a> ·
   <a href="#-how-iso-burning-works">How ISO Burning Works</a> ·
+  <a href="#-architecture">Architecture</a> ·
+  <a href="#-how-this-project-is-built">How it's built</a> ·
+  <a href="#-dependencies">Dependencies</a> ·
+  <a href="#-cli-reference">CLI reference</a> ·
   <a href="#-open-source--mit-license">License</a> ·
   <a href="#-faq">FAQ</a>
 </p>
@@ -45,7 +54,7 @@
 
 ## 🔥 What is pyburn?
 
-**pyburn** (`py_burn`) is a free, **open-source**, **MIT-licensed** Python app for Linux that helps you:
+**pyburn** (`py_burn`) is a **terminal-only**, **open-source**, **MIT-licensed** CLI for Linux that helps you:
 
 - **Format USB drives** as empty FAT32 storage
 - **Create bootable USB sticks** from Linux and Windows ISO files
@@ -62,7 +71,7 @@ No mystery binaries. No vendor lock-in. Fork it, read it, improve it — that is
 
 | What you need | What pyburn does |
 |---|---|
-| **Rufus alternative on Linux** | GUI, CLI, and Rich terminal menu for USB workflows |
+| **Rufus alternative on Linux** | Interactive CLI menu for USB format and ISO burn |
 | **Format USB to FAT32** | Wipe, partition, and label a blank storage drive |
 | **Bootable Linux USB** | Validate ISO, prepare partition, copy live/installer files |
 | **Bootable Windows USB** | Handles large `install.wim` splits for FAT32 limits |
@@ -70,15 +79,17 @@ No mystery binaries. No vendor lock-in. Fork it, read it, improve it — that is
 | **Dependency checker** | Tells you exactly which packages your distro is missing |
 | **Safety first** | Confirmations, incomplete-field checks, device warnings |
 
-**Interfaces:**
+**Commands** — primary name is `py_burn`; `pyburn` is an alias. All flags use a leading hyphen (`-`).
 
-| Command | Mode | Best for |
-|---|---|---|
-| `sudo poetry run py_burn -tui` | **Menu (TUI)** | Guided FAT32 storage formatting |
-| `sudo poetry run py_burn` | **GUI** | Visual bootable ISO creation |
-| `poetry run py_burn -cli` | **CLI** | Quick status and scripting |
-| `poetry run py_burn -download <os>` | **CLI** | Fetch official ISO images |
-| `poetry run py_burn -list-usb` | **CLI** | List removable USB devices |
+| Command | What it does |
+|---|---|
+| `sudo poetry run py_burn` | **Interactive CLI menu** (default) — burn ISO or format storage |
+| `poetry run py_burn -h` | Show help |
+| `poetry run py_burn -version` | Show version |
+| `poetry run py_burn -status` | Show dependencies and detected USB devices |
+| `poetry run py_burn -check-deps` | Audit required system tools |
+| `poetry run py_burn -list-usb` | List removable USB devices |
+| `poetry run py_burn -download <os>` | Download an official ISO |
 
 ---
 
@@ -93,18 +104,133 @@ poetry install          # creates .venv and installs dependencies
 poetry run py_burn -check-deps
 ```
 
+### Try it in 30 seconds
+
+```bash
+# See your USB drives
+poetry run py_burn -list-usb
+
+# Launch the interactive CLI menu (burn ISO or format storage)
+sudo poetry run py_burn
+```
+
+> Destructive steps need `sudo`. When in doubt, run `poetry run py_burn -list-usb` first. Trust, but verify `/dev/sdX`.
+
+---
+
+## 🛠️ How this project is built
+
+pyburn is a **plain Python CLI** — no compiled extensions, no GUI framework, no mystery build chain. What you see in the repo is what runs on your machine. The tooling around it exists to keep dependencies reproducible and the dev environment isolated from your system Python.
+
+### The stack at a glance
+
+| Piece | What it is | What it implies for you |
+|---|---|---|
+| **Python 3.14** | The language runtime | You need 3.14+ installed. pyburn uses modern Python (dataclasses, type hints, `pathlib`). |
+| **Poetry** | Dependency and project manager | Run commands via `poetry run …` or activate the venv first. Do not `pip install` into system Python. |
+| **`.venv/`** | Local virtual environment | A sandboxed copy of Python + packages, created inside the repo. Safe to delete and recreate with `poetry install`. |
+| **`pyproject.toml`** | Project manifest | Declares package name, version, Python deps, CLI entry points (`py_burn`, `pyburn`), and dev tools (pytest, ruff). |
+| **`poetry.lock`** | Frozen dependency graph | Exact versions Poetry resolved. Commit this — everyone gets the same installs. |
+| **`poetry.toml`** | Poetry settings | `in-project = true` means the venv lives at `.venv/` in the repo root, not somewhere global. |
+| **`requirements.txt`** | Pip-compatible pin list | Same runtime versions as the lockfile, for Docker, CI, or `pip install -r requirements.txt` without Poetry. |
+| **`pyburn.py`** | Root launcher | Thin wrapper that calls `py_burn.__main__`. Handy when you are not inside the venv. |
+| **`Dockerfile` + `build-docker.sh`** | Container image | Packages pyburn + Linux system tools into an image. USB access still needs `--privileged` and `/dev` mounted. |
+
+### Poetry — why it is here
+
+**Poetry** is a Python tool that manages three things in one place:
+
+1. **Dependencies** — what libraries pyburn needs (`rich`, `tinydb`, `pyfiglet`)
+2. **The virtual environment** — where those libraries get installed
+3. **The installable package** — so `py_burn` becomes a command you can run
+
+When you run:
+
+```bash
+poetry install
+```
+
+Poetry reads `pyproject.toml`, creates `.venv/` (because of `poetry.toml`), installs locked versions from `poetry.lock`, and registers the `py_burn` / `pyburn` console scripts.
+
+**What that implies:** you do not need to manually create a venv or guess package versions. `poetry install` is the one command that sets up a working dev environment. Use `poetry add <package>` to add deps and `poetry run pytest` to run tools inside the venv without activating it.
+
+### Virtual environment (`.venv`) — what it is
+
+A **virtual environment** is an isolated Python installation. Packages you install for pyburn stay inside `.venv/` and do not pollute `/usr/bin/python` or break other projects.
+
+```text
+System Python          .venv/ (project-local)
+─────────────          ─────────────────────
+/usr/bin/python3   ≠   py_burn/.venv/bin/python
+global pip packages    only pyburn's dependencies
+```
+
+**What that implies:**
+
+- `.venv/` is **gitignored** — each clone builds its own
+- After `poetry install`, either run `poetry run py_burn` **or** activate first:
+
+```bash
+source .venv/bin/activate   # now `py_burn` works directly
+py_burn -list-usb
+deactivate                  # leave the venv
+```
+
+- If installs act weird, nuke and recreate: `rm -rf .venv && poetry install`
+
+### `pyproject.toml` vs `poetry.lock` vs `requirements.txt`
+
+These three files answer different questions:
+
+| File | Answers | Who cares |
+|---|---|---|
+| `pyproject.toml` | *What* does the project need? (ranges like `rich ^14.0`) | Authors editing dependencies |
+| `poetry.lock` | *Exactly which* versions were resolved? | Everyone cloning the repo — **commit this** |
+| `requirements.txt` | Same pins, pip-friendly format | Docker, CI, or pip-only workflows |
+
+**What that implies:** day-to-day development uses Poetry. If you only have pip, `pip install -r requirements.txt && pip install .` works for runtime, but Poetry is the canonical path.
+
+### Dev workflow
+
+```bash
+git clone https://github.com/tuliofh01/py_burn.git
+cd py_burn
+poetry install              # create .venv + install deps + register CLI
+
+poetry run py_burn -check-deps
+poetry run pytest           # run tests
+poetry run ruff check py_burn tests   # lint
+
+sudo poetry run py_burn     # interactive menu (needs root for USB ops)
+```
+
+### Docker (optional)
+
+If you prefer a container over a local venv:
+
+```bash
+./build-docker.sh           # builds pyburn:latest
+```
+
+The image bundles Python dependencies **and** the system tools pyburn shells out to (`gdisk`, `wimlib`, `rsync`, etc.). Burning a real USB stick from Docker still requires passing through host devices — see the script output for the full `docker run` example.
+
+**What that implies:** Docker is for packaging and reproducible environments, not a magic bypass around `sudo` and physical USB access.
+
 ### Project layout (max depth: 4)
 
 ```text
 py_burn/
 ├── pyburn.py           # launcher script
 ├── pyproject.toml      # Poetry project config
-├── poetry.lock
-├── poetry.toml
+├── poetry.lock         # locked dependency versions
+├── poetry.toml         # Poetry settings (in-project venv)
+├── requirements.txt    # pip pin list (Docker / CI)
+├── Dockerfile          # container image definition
+├── build-docker.sh     # builds the Docker image
 ├── .gitignore
 ├── LICENSE
 ├── README.md
-├── .venv/              # local Python environment
+├── .venv/              # local Python environment (created by poetry install)
 ├── py_burn/            # application package
 │   ├── __main__.py
 │   ├── model/
@@ -114,37 +240,20 @@ py_burn/
 └── tests/
 ```
 
-### Try it in 30 seconds
-
-```bash
-# See your USB drives
-poetry run py_burn -list-usb
-# or
-poetry run python pyburn.py -list-usb
-
-# Launch the terminal menu (storage formatting)
-sudo poetry run py_burn -tui
-
-# Or burn an ISO with the GUI
-sudo poetry run py_burn
-```
-
-> Destructive steps need `sudo`. When in doubt, `-list-usb` first. Trust, but verify `/dev/sdX`.
-
 ---
 
-## 💾 Format a USB drive for storage (TUI menu)
+## 💾 Format a USB drive for storage (CLI menu)
 
 **Use case:** blank thumb drive for files — not a bootable installer.
 
 ```bash
-sudo poetry run py_burn -tui
+sudo poetry run py_burn
 ```
 
-1. **USB Device** → pick your drive from the list (or type `/dev/sdX`)
-2. **Format Options** → `vfat` / `gpt` / volume label (defaults are fine)
-3. **Actions** → set safety confirmation to `yes`
-4. Main menu → **Format USB storage** → read the warning → confirm
+1. **Burn Settings** → set **Job mode** to `storage_only`
+2. **USB Device** → pick your drive from the list (or type `/dev/sdX`)
+3. **Confirm** → set safety confirmation to `yes`
+4. Main menu → **Format empty storage** → read the warning → confirm
 
 You get a single empty **FAT32** partition. No ISO. No bootloader drama. Just storage.
 
@@ -164,16 +273,18 @@ poetry run py_burn -download ubuntu   # optional — built-in catalog
 
 Downloads land in `~/Downloads/py_burn/` by default.
 
-### Step 2 — Burn (GUI)
+### Step 2 — Burn (CLI menu)
 
 ```bash
 sudo poetry run py_burn
 ```
 
-1. Select your **ISO file**
-2. Choose the **USB device**
-3. Review warnings
-4. Click **Burn to USB**
+1. **ISO Image** → select or enter the path to your `.iso` file (settings auto-update)
+2. **USB Device** → choose the target drive
+3. **Confirm** → set safety confirmation to `yes`
+4. Main menu → **Burn ISO to USB** → confirm the warning
+
+A live progress bar shows percentage, elapsed time, and copy status.
 
 ### What happens behind the scenes
 
@@ -288,19 +399,19 @@ That is why pyburn formats boot partitions as **FAT32**: almost every machine ca
 
 pyburn handles both, and they are not interchangeable:
 
-| Mode | Command | USB after completion |
+| Mode | How to run | USB after completion |
 |---|---|---|
-| **Storage format** (`-tui`) | Wipe → single FAT32 partition → empty | Normal thumb drive for files |
-| **ISO burn** (GUI) | Wipe → bootable FAT32 → copy ISO files | Bootable installer or live OS |
+| **Storage format** | `sudo poetry run py_burn` → job mode `storage_only` | Empty FAT32 thumb drive |
+| **ISO burn** (default) | `sudo poetry run py_burn` → select ISO + device | Bootable installer or live OS |
 
 Formatting for storage gives you drag-and-drop convenience. Burning an ISO gives you something the **boot menu** understands. Pick the job first, then the tool.
 
 ### Quick decision guide
 
-- **"I want a blank USB for photos and documents"** → use **storage format** (`-tui`)
-- **"I want to install Windows or Linux on this laptop"** → burn an **installer ISO**
+- **"I want a blank USB for photos and documents"** → `sudo poetry run py_burn`, set job mode to `storage_only`
+- **"I want to install Windows or Linux on this laptop"** → `sudo poetry run py_burn`, select an installer ISO
 - **"I want to try Linux without touching my disk"** → burn a **live ISO**
-- **"I want an OS that runs from the stick, like Tails"** → burn a **persistent live** image and enable persistence if the distro supports it
+- **"I want an OS that runs from the stick, like Tails"** → burn a **persistent live** image
 
 ---
 
@@ -311,9 +422,9 @@ Clean **MVC** — easy to read, easy to contribute:
 ```text
 py_burn/
 ├── py_burn/         # application package
-│   ├── model/       # usb, iso, copy, deps, workflow
-│   ├── view/        # Rich TUI
-│   ├── controller/  # app + TUI controller
+│   ├── model/       # usb, iso, copy, burn, deps, workflow
+│   ├── view/        # Rich CLI rendering
+│   ├── controller/  # CLI app + menu controller
 │   └── data/        # iso_catalog.json, presets.json
 ├── tests/
 ├── pyburn.py        # launcher script
@@ -332,8 +443,8 @@ flowchart LR
 ```
 
 - **Model** — business logic, subprocess calls, zero UI imports
-- **View** — Rich panels, tables, figlet banners
-- **Controller** — navigation, edits, burn/format triggers
+- **View** — Rich panels, progress bars, figlet banners
+- **Controller** — menu navigation, ISO/USB selection, burn/format jobs
 
 ---
 
@@ -353,18 +464,78 @@ poetry run py_burn -check-deps   # shows what is missing on your distro
 
 ---
 
-## 🖥️ CLI reference
+## 📦 Dependencies
+
+pyburn splits dependencies into two layers: **Python packages** (installed by Poetry into `.venv/`) and **system tools** (provided by your distro, invoked via `subprocess`). The app cannot burn or format without both.
+
+### Python packages (runtime)
+
+Declared in `pyproject.toml`, pinned in `poetry.lock` and `requirements.txt`.
+
+| Package | Version | Role in pyburn |
+|---|---|---|
+| **[Rich](https://github.com/Textualize/rich)** | 14.3.4 | Terminal UI — panels, tables, prompts, progress bars, and live burn status in the interactive CLI |
+| **[pyfiglet](https://github.com/pwaller/pyfiglet)** | 1.0.4 | ASCII banner at CLI startup (`pyburn` title in the menu header) |
+| **[TinyDB](https://github.com/msiemens/tinydb)** | 4.8.2 | Lightweight embedded document database (project dependency; `TinyLogger` persists events as JSON via stdlib) |
+| **markdown-it-py** | 4.2.0 | Rich dependency — Markdown rendering support inside Rich |
+| **Pygments** | 2.20.0 | Rich dependency — syntax highlighting for styled terminal output |
+| **mdurl** | 0.1.2 | Rich dependency — URL utilities used by the Markdown parser |
+
+**What this implies:** three direct dependencies, all pure Python. No compiled wheels required. Rich pulls in the Markdown/highlighting stack automatically.
+
+### Python packages (development)
+
+Installed with `poetry install` (dev group), not needed to run pyburn end-user.
+
+| Package | Role |
+|---|---|
+| **pytest** | Unit and integration test runner (`poetry run pytest`) |
+| **pytest-cov** | Optional coverage reporting during test runs |
+| **ruff** | Fast linter for unused imports, style, and basic errors |
+
+### System tools (runtime)
+
+These are **not** pip packages. pyburn shells out to them for disk operations. Your distro must provide them — `poetry run py_burn -check-deps` audits your system.
+
+| Tool | Role in pyburn |
+|---|---|
+| **`lsblk`** | Detect removable USB block devices and their size |
+| **`sgdisk` / `gdisk`** | Create GPT/MBR partition tables on the target drive |
+| **`mkfs.vfat`** | Format the USB partition as FAT32 (boot-compatible) |
+| **`wipefs`** | Clear old filesystem signatures before repartitioning |
+| **`dd`** | Zero the first sectors during device wipe |
+| **`partprobe`** | Refresh the kernel partition table after changes |
+| **`mount` / `umount`** | Mount ISO images and USB partitions for file copy |
+| **`rsync`** | Bulk-copy ISO contents to the USB with progress output |
+| **`isoinfo`** | Validate ISO 9660 structure before burning |
+| **`file`** | Confirm the image file is a valid ISO filesystem |
+| **`wimlib-imagex`** | Verify Windows `install.wim` / `install.esd` integrity |
+| **`wimsplit`** | Split oversized Windows install images for FAT32 (`.swm` chunks) |
+| **`sync`** | Flush buffered writes before unmounting |
+
+**What this implies:** pyburn orchestrates existing Linux utilities rather than reimplementing low-level disk I/O in Python. That keeps the codebase small and auditable, but means **you must install the system packages** for your distro (Arch, Debian, Fedora, etc.) — Poetry does not install them for you.
 
 ```bash
-poetry run py_burn -h               # Help
-poetry run py_burn -version          # Version
-poetry run py_burn -check-deps      # Audit system tools
-poetry run py_burn -list-usb        # List removable disks
-poetry run py_burn -cli             # Deps + device summary
-poetry run py_burn -download arch   # Download ISO from catalog
-sudo poetry run py_burn -tui         # Interactive storage menu
-sudo poetry run py_burn              # Graphical ISO burner
+poetry run py_burn -check-deps   # list missing tools + install command for your distro
 ```
+
+---
+
+## 🖥️ CLI reference
+
+All flags require a leading `-` (e.g. `-list-usb`, not `list-usb`).
+
+```bash
+poetry run py_burn -h                 # Help
+poetry run py_burn -version            # Version
+poetry run py_burn -check-deps         # Audit system tools
+poetry run py_burn -list-usb           # List removable disks
+poetry run py_burn -status             # Deps + device summary
+poetry run py_burn -download arch       # Download ISO from catalog
+sudo poetry run py_burn                # Interactive menu (burn / format)
+```
+
+After `poetry install`, you can also run `py_burn` or `pyburn` directly inside the activated `.venv`.
 
 **Catalog examples:** `arch`, `ubuntu`, `fedora`, `debian` — full list in `py_burn/data/iso_catalog.json`.
 
@@ -376,7 +547,7 @@ sudo poetry run py_burn              # Graphical ISO burner
 
 - Unplug drives you are **not** flashing
 - Run `poetry run py_burn -list-usb` and triple-check `/dev/sdX`
-- The TUI will not format until required fields are complete and you confirm `yes`
+- The CLI menu blocks burn/format until required fields are complete and you confirm `yes`
 
 ---
 
@@ -405,7 +576,7 @@ poetry run ruff check py_burn tests
 ```
 
 - Business logic → `model/`
-- UI / TUI → `view/`
+- CLI rendering → `view/`
 - User flows → `controller/`
 - Tests → `tests/`
 
@@ -424,7 +595,7 @@ Yes. pyburn covers the same core jobs — formatting USB drives and writing boot
 <details>
 <summary><strong>Can I format a USB to FAT32 without burning an ISO?</strong></summary>
 
-Yes. Use <code>sudo poetry run py_burn -tui</code> for guided empty FAT32 storage formatting.
+Yes. Use <code>sudo poetry run py_burn</code>, set job mode to <code>storage_only</code>, then run the format job from the menu.
 </details>
 
 <details>
@@ -443,6 +614,12 @@ Arch, Debian/Ubuntu, Fedora/RHEL, and openSUSE families are detected for depende
 <summary><strong>What is the difference between a live USB and an installer USB?</strong></summary>
 
 A <strong>live USB</strong> runs the operating system from the stick (often into RAM) so you can try it without installing. An <strong>installer USB</strong> boots a setup wizard whose goal is to copy the OS onto your internal drive. Tails is a special case: a <strong>persistent live</strong> system designed to run from the USB itself, not to install onto your PC. See <a href="#-how-iso-burning-works">How ISO burning works</a> for the full breakdown.
+</details>
+
+<details>
+<summary><strong>Why does <code>sudo poetry run py_burn</code> print help instead of the menu?</strong></summary>
+
+It should open the interactive menu. If you see help text, you may be on an older build where empty args mapped to <code>-h</code>. Update the project and run again with no extra flags. Use <code>poetry run py_burn -h</code> only when you want help.
 </details>
 
 <details>

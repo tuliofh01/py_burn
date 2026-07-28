@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 import pyfiglet
@@ -183,6 +184,3 @@ class CLIMenu:
             return f"{self.UNICODE['complete']} complete"
         return self.UNICODE["arrow"]
 
-
-# Backwards-compatible alias
-TUIMenu = CLIMenu

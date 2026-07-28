@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 
 from py_burn.controller.tui_controller import CLIController
 from py_burn.model.container import ContainerBuilder
@@ -31,7 +30,7 @@ class PyBurnCLI:
             return self.run_menu()
 
         if "-version" in args:
-            print(f"pyburn v{__version__}")
+            print(f"py_burn v{__version__}")
             return 0
 
         if "-check-deps" in args:
@@ -149,6 +148,3 @@ class PyBurnCLI:
         self.logger.error("CLI", f"Download failed: {result.error}")
         return 1
 
-
-# Backwards-compatible alias
-PyBurnApp = PyBurnCLI

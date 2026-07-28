@@ -8,8 +8,7 @@ via shutil.which(). Never runs sudo or installs anything — only advises.
 from __future__ import annotations
 
 import shutil
-import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 

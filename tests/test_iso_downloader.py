@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from py_burn.model.iso_downloader import DownloadResult, IsoDownloader
+from py_burn.model.iso_downloader import IsoDownloader
 
 
 def test_downloader_initialization():
@@ -74,6 +73,7 @@ def test_download_with_progress(mock_urlopen):
         progress_callback=progress,
     )
 
+    assert result.success
     assert len(progress_calls) > 0
     assert progress_calls[0][0] == 8192  # First chunk
     # Cleanup

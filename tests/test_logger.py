@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 
 from py_burn.model.logger import LogEntry, TinyLogger
 
@@ -28,7 +26,7 @@ def test_log_entry_default_timestamp():
 def test_tiny_logger_custom_path(tmp_path: Path):
     """TinyLogger should use a custom db path."""
     db_path = tmp_path / "test_logs.json"
-    logger = TinyLogger(db_path=db_path)
+    TinyLogger(db_path=db_path)
     assert db_path.exists()
 
 

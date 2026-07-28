@@ -301,6 +301,3 @@ class CLIController:
             self.console.print(self.view.render_message("CLI", message))
         Prompt.ask("\n[dim]Press Enter[/dim]", default="", show_default=False)
 
-
-# Backwards-compatible alias
-TUIController = CLIController
