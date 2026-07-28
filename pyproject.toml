@@ -1,14 +1,14 @@
 [tool.poetry]
-name = "shuffus"
+name = "py_burn"
 version = "1.0.1"
-description = "Create bootable Windows USB drives from Linux with a friendly GUI — no command line required."
+description = "CLI USB tool for Linux — format storage and burn bootable ISO images."
 authors = ["tuliofh01 <tuliofh01@proton.me>"]
 license = "MIT"
 readme = "README.md"
-packages = [{ include = "shuffus", from = "src" }]
+packages = [{ include = "py_burn" }]
 classifiers = [
     "Development Status :: 4 - Beta",
-    "Environment :: X11 Applications :: GTK",
+    "Environment :: Console",
     "Intended Audience :: End Users/Desktop",
     "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
@@ -18,11 +18,35 @@ classifiers = [
 ]
 
 [tool.poetry.urls]
-Homepage = "https://github.com/tuliofh01/shuffus"
-Repository = "https://github.com/tuliofh01/shuffus"
+Homepage = "https://github.com/tuliofh01/py_burn"
+Repository = "https://github.com/tuliofh01/py_burn"
 
 [tool.poetry.scripts]
-shuffus = "shuffus.__main__:main"
+pyburn = "py_burn.__main__:main"
+py_burn = "py_burn.__main__:main"
+
+[tool.poetry.dependencies]
+python = "^3.14"
+tinydb = "^4.8"
+rich = "^14.0"
+pyfiglet = "^1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+pytest-cov = "^5.0"
+ruff = "^0.4"
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Standard Desktop",
+    "description": "Typical Linux desktop USB. 2 GB swap, ext4, no hibernation.",
+    "swap_gb": 2,
+    "hibernate": false,
+    "filesystem": "ext4",
+    "partition_table": "gpt",
+    "boot_mode": "both"
+  },
+  {
+    "name": "Windows Bootable USB",
+    "description": "For Windows 10/11 installer. FAT32, MBR/GPT hybrid, Win-compatible.",
+    "swap_gb": 0,
+    "hibernate": false,
+    "filesystem": "vfat",
+    "partition_table": "gpt",
+    "boot_mode": "uefi"
+  },
+  {
+    "name": "Linux Live USB",
+    "description": "Persistent Linux live environment. 4 GB casper-rw, ext4.",
+    "swap_gb": 4,
+    "hibernate": false,
+    "filesystem": "ext4",
+    "partition_table": "gpt",
+    "boot_mode": "both"
+  },
+  {
+    "name": "Multi-Boot USB",
+    "description": "Ventoy-style multi-boot. 8 GB persistent storage, NTFS for large ISOs.",
+    "swap_gb": 8,
+    "hibernate": true,
+    "filesystem": "ntfs",
+    "partition_table": "gpt",
+    "boot_mode": "both"
+  },
+  {
+    "name": "Minimal (Low RAM)",
+    "description": "Lightweight USB for older machines. 4 GB swap, no frills.",
+    "swap_gb": 4,
+    "hibernate": false,
+    "filesystem": "ext4",
+    "partition_table": "mbr",
+    "boot_mode": "legacy"
+  }
+]

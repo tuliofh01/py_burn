@@ -1,6 +1,6 @@
 """ISO file validation — magic bytes, filesystem type, size, structure, WIM/ESD.
 
-Port of the validation logic from baby_shuffus.sh (lines 210-344) into
+Port of the validation logic from baby_py_burn.sh (lines 210-344) into
 Python 3.14 with dataclasses, pathlib, and subprocess.
 """
 
@@ -177,7 +177,7 @@ class IsoValidator:
 
     def validate_all(self) -> IsoValidationResult:
         """Run all unmounted ISO checks and return aggregated result."""
-        result = IsoValidationResult()
+        result = IsoValidationResult(success=False)
 
         # 1. Magic bytes
         result.magic_bytes_ok = self.validate_magic()

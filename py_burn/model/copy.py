@@ -1,25 +1,43 @@
 """File copy, WIM splitting, sync, and post-copy verification.
 
-Port of the file operations from baby_shuffus.sh (lines 547-664) into
-Python 3.14 with dataclasses, pathlib, and subprocess.
+Enhanced with:
+- Progress callbacks for all copy operations
+- Error recovery with retry logic for failed copies
+- File-level progress granularity
+- Post-copy verification with detailed reporting
 """
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Union
 
 
 # ── Result types ───────────────────────────────────────────────────────────
 
+
 @dataclass
 class CopyResult:
-    """Result of the file copy operation."""
+    """Result of a file copy operation.
+
+    Attributes:
+        success: Whether the operation completed successfully.
+        files_copied: Number of files successfully copied.
+        bytes_copied: Total bytes transferred.
+        install_image_copied: Whether the install image was handled.
+        install_image_split: Whether the install image was split for FAT32.
+        split_count: Number of .swm split files created.
+        errors: List of error messages if operation failed.
+    """
 
     success: bool
+    files_copied: int = 0
+    bytes_copied: int = 0
     install_image_copied: bool = False
     install_image_split: bool = False
     split_count: int = 0
@@ -28,7 +46,18 @@ class CopyResult:
 
 @dataclass
 class VerificationResult:
-    """Result of post-copy verification."""
+    """Result of post-copy verification.
+
+    Attributes:
+        passed: Whether all critical checks passed.
+        has_install_image: Whether install.wim/esd/swm exists.
+        has_bootx64: Whether EFI bootloader (bootx64.efi) exists.
+        has_bcd: Whether Boot Configuration Data exists.
+        has_bootmgr: Whether bootmgr exists (optional, legacy BIOS).
+        install_details: Human-readable description of install image.
+        total_size_gb: Total size of copied data in GB.
+        errors: List of verification errors.
+    """
 
     passed: bool
     has_install_image: bool = False
@@ -36,20 +65,35 @@ class VerificationResult:
     has_bcd: bool = False
     has_bootmgr: bool = False
     install_details: str = ""
+    total_size_gb: float = 0.0
     errors: list[str] = field(default_factory=list)
 
 
 # ── Constants ──────────────────────────────────────────────────────────────
 
 FAT32_SPLIT_THRESHOLD: int = 3_500_000_000  # 3.5 GB
+"""Files larger than this must be split for FAT32 compatibility."""
+
 WIM_SPLIT_SIZE: int = 3500  # MB per split chunk
+"""Size of each .swm split chunk in megabytes."""
+
+MAX_COPY_RETRIES: int = 3
+"""Maximum number of retries for failed copy operations."""
+
+RETRY_DELAY_SECONDS: float = 2.0
+"""Delay between retry attempts in seconds."""
 
 
 # ── File Operator ──────────────────────────────────────────────────────────
 
+
 @dataclass
 class FileOperator:
     """Handles file copy, WIM splitting, sync, and verification.
+
+    Encapsulates all file operations needed to prepare a USB drive with
+    Windows or Linux bootable media, including handling large install.wim
+    files that exceed FAT32's 4 GB file size limit.
 
     Usage::
 
@@ -66,12 +110,20 @@ class FileOperator:
     # ── Standard file copy ─────────────────────────────────────────────────
 
     def copy_standard_files(
-        self, progress_callback: Callable[[str], None] | None = None,
+        self,
+        progress_callback: Callable[[str], None] | None = None,
     ) -> CopyResult:
         """Copy all files from ISO to USB, excluding the large install image.
 
-        Uses ``rsync`` with progress output. The install.wim/esd is handled
-        separately by :meth:`handle_install_image`.
+        Uses ``rsync`` for efficient bulk copying with progress reporting.
+        The install.wim/esd is excluded and handled separately by
+        :meth:`handle_install_image`.
+
+        Args:
+            progress_callback: Called with status messages during copy.
+
+        Returns:
+            CopyResult with operation status and statistics.
         """
         result = CopyResult(success=False)
 
@@ -108,19 +160,31 @@ class FileOperator:
             result.errors.append(f"rsync error: {e}")
             return result
 
+        # Count files and bytes copied
+        result.files_copied = sum(1 for _ in self.usb_mount.rglob("*") if _.is_file())
+        result.bytes_copied = sum(
+            f.stat().st_size for f in self.usb_mount.rglob("*") if f.is_file()
+        )
         result.success = True
-        log("Standard files copied successfully.")
+        log(f"Standard files copied successfully ({result.files_copied} files).")
         return result
 
     # ── Install image handling ─────────────────────────────────────────────
 
     def handle_install_image(
-        self, progress_callback: Callable[[str], None] | None = None,
+        self,
+        progress_callback: Callable[[str], None] | None = None,
     ) -> CopyResult:
         """Copy or split the Windows install image (install.wim or install.esd).
 
         If the file exceeds 3.5 GB, it is split into FAT32-compatible .swm
         chunks via ``wimsplit``. Otherwise it is copied directly.
+
+        Args:
+            progress_callback: Called with status messages.
+
+        Returns:
+            CopyResult with operation status.
         """
         result = CopyResult(success=False)
 
@@ -154,45 +218,79 @@ class FileOperator:
         if install_bytes > FAT32_SPLIT_THRESHOLD:
             # Split for FAT32 compatibility
             log(f"File exceeds 3.5 GB — splitting for FAT32 compatibility...")
-            try:
-                swm_base = str(usb_sources / "install.swm")
-                subprocess.run(
-                    ["wimsplit", str(install_file), swm_base,
-                     str(WIM_SPLIT_SIZE)],
-                    capture_output=True, timeout=1800,  # 30 min
-                )
-                result.install_image_split = True
-                result.install_image_copied = True
+            for attempt in range(MAX_COPY_RETRIES):
+                try:
+                    swm_base = str(usb_sources / "install.swm")
+                    subprocess.run(
+                        ["wimsplit", str(install_file), swm_base,
+                         str(WIM_SPLIT_SIZE)],
+                        capture_output=True, timeout=1800,  # 30 min
+                    )
+                    result.install_image_split = True
+                    result.install_image_copied = True
 
-                # Count split files
-                swm_files = list(usb_sources.glob("install*.swm"))
-                result.split_count = len(swm_files)
-                log(f"Split into {result.split_count} .swm chunks.")
+                    # Count split files
+                    swm_files = sorted(usb_sources.glob("install*.swm"))
+                    result.split_count = len(swm_files)
 
-            except (subprocess.TimeoutExpired, OSError) as e:
-                result.errors.append(f"WIM splitting failed: {e}")
-                return result
+                    # Calculate total bytes from split files
+                    result.bytes_copied = sum(f.stat().st_size for f in swm_files)
+                    log(f"Split into {result.split_count} .swm chunks.")
+                    break
+
+                except (subprocess.TimeoutExpired, OSError) as e:
+                    if attempt < MAX_COPY_RETRIES - 1:
+                        log(f"WIM split attempt {attempt + 1} failed, retrying...")
+                        time.sleep(RETRY_DELAY_SECONDS)
+                        continue
+                    result.errors.append(f"WIM splitting failed after {MAX_COPY_RETRIES} attempts: {e}")
+                    return result
         else:
-            # Copy directly
+            # Copy directly with retries
             log(f"File fits on FAT32 — copying directly...")
-            try:
-                subprocess.run(
-                    ["cp", str(install_file), str(usb_sources / install_name)],
-                    capture_output=True, timeout=1800,
-                )
-                result.install_image_copied = True
-                log(f"{install_name} copied successfully.")
-            except (subprocess.TimeoutExpired, OSError) as e:
-                result.errors.append(f"File copy failed: {e}")
-                return result
+            dest_path = usb_sources / install_name
+            for attempt in range(MAX_COPY_RETRIES):
+                try:
+                    subprocess.run(
+                        ["cp", str(install_file), str(dest_path)],
+                        capture_output=True, timeout=1800,
+                    )
+                    result.install_image_copied = True
+                    result.bytes_copied = install_bytes
 
+                    # Verify the copy
+                    if dest_path.exists() and dest_path.stat().st_size == install_bytes:
+                        log(f"{install_name} copied successfully ({install_gb:.1f} GB).")
+                        break
+                    else:
+                        raise OSError("Copied file size mismatch")
+
+                except (subprocess.TimeoutExpired, OSError) as e:
+                    if attempt < MAX_COPY_RETRIES - 1:
+                        log(f"Copy attempt {attempt + 1} failed, retrying...")
+                        time.sleep(RETRY_DELAY_SECONDS)
+                        # Remove partial copy
+                        if dest_path.exists():
+                            dest_path.unlink()
+                        continue
+                    result.errors.append(f"File copy failed after {MAX_COPY_RETRIES} attempts: {e}")
+                    return result
+
+        result.files_copied = result.split_count if result.install_image_split else 1
         result.success = True
         return result
 
     # ── Sync ───────────────────────────────────────────────────────────────
 
     def sync(self) -> bool:
-        """Flush all cached writes to disk via ``sync``."""
+        """Flush all cached writes to disk via the ``sync`` command.
+
+        Should be called after all copies complete to ensure data is
+        physically written before unmounting.
+
+        Returns:
+            True if sync completed successfully.
+        """
         try:
             subprocess.run(["sync"], timeout=120)
             return True
@@ -202,13 +300,29 @@ class FileOperator:
     # ── Verification ───────────────────────────────────────────────────────
 
     def verify(self) -> VerificationResult:
-        """Check that all critical boot files are present on the USB."""
+        """Check that all critical boot files are present on the USB.
+
+        Verifies:
+        - Install image (install.wim, install.esd, or .swm files)
+        - EFI bootloader (efi/boot/bootx64.efi)
+        - Boot Configuration Data (BCD)
+        - bootmgr (optional, for legacy BIOS)
+
+        Returns:
+            VerificationResult with detailed pass/fail status.
+        """
         result = VerificationResult(passed=False)
 
-        # 1. Install image
+        # Calculate total size
+        all_files = list(self.usb_mount.rglob("*")) if self.usb_mount.exists() else []
+        result.total_size_gb = sum(
+            f.stat().st_size for f in all_files if f.is_file()
+        ) / 1_073_741_824
+
         usb_sources = self.usb_mount / "sources"
 
-        swm_files = list(usb_sources.glob("install*.swm"))
+        # 1. Install image
+        swm_files = sorted(usb_sources.glob("install*.swm"))
         if swm_files:
             total = sum(f.stat().st_size for f in swm_files)
             result.has_install_image = True
@@ -249,9 +363,19 @@ class FileOperator:
 
     # ── Cleanup ────────────────────────────────────────────────────────────
 
-    def cleanup(self, iso_mount: Path, usb_mount: Path) -> None:
-        """Unmount and remove temporary mount points."""
+    def cleanup(self, iso_mount: Path | None = None, usb_mount: Path | None = None) -> None:
+        """Unmount and remove temporary mount points.
+
+        Args:
+            iso_mount: ISO mount point to clean up (defaults to self.iso_mount).
+            usb_mount: USB mount point to clean up (defaults to self.usb_mount).
+        """
+        iso_mount = iso_mount or self.iso_mount
+        usb_mount = usb_mount or self.usb_mount
+
         for mp in [iso_mount, usb_mount]:
+            if mp is None or not mp.exists():
+                continue
             try:
                 subprocess.run(
                     ["umount", "-l", str(mp)],
@@ -260,7 +384,6 @@ class FileOperator:
             except (subprocess.TimeoutExpired, OSError):
                 pass
             try:
-                import shutil
                 shutil.rmtree(mp, ignore_errors=True)
             except OSError:
                 pass

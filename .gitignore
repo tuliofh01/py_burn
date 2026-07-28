@@ -7,9 +7,11 @@ dist/
 build/
 .eggs/
 *.egg
+.Python
 
 # Virtual environment
 .venv/
+venv/
 
 # IDE
 .idea/
@@ -17,6 +19,12 @@ build/
 *.swp
 *.swo
 *~
+
+# Test / lint caches
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 
 # ISO assets (multi-GB files — never version control)
 assets/
@@ -32,6 +40,7 @@ assets/
 .DS_Store
 Thumbs.db
 
-# OpenCode
+# Tooling caches
 .omo/
 .codegraph/
+.zig-cache/

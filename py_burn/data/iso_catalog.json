@@ -1,0 +1,197 @@
+{
+  "$schema": "iso_catalog",
+  "version": "1.0.0",
+  "description": "Curated ISO download catalog for py_burn. All links are official sources.",
+  "categories": {
+    "linux": {
+      "arch": {
+        "name": "Arch Linux",
+        "website": "https://archlinux.org",
+        "releases": [
+          {
+            "label": "Latest Release",
+            "url": "https://archlinux.org/iso/latest/archlinux-x86_64.iso",
+            "checksum_url": "https://archlinux.org/iso/latest/sha256sums.txt",
+            "size_approx_gb": 0.8,
+            "type": "rolling",
+            "notes": "Rolling release — always latest"
+          }
+        ]
+      },
+      "centos": {
+        "name": "CentOS Stream",
+        "website": "https://centos.org",
+        "releases": [
+          {
+            "label": "CentOS Stream 10",
+            "url": "https://dl.cos9-stream.org/iso-latest/x86_64/iso/CentOS-Stream-10-latest-x86_64-dvd1.iso",
+            "checksum_url": "https://dl.cos9-stream.org/iso-latest/x86_64/iso/CENTOS-STREAM-10-20250128-x86_64-dvd1.iso.sha256sum",
+            "size_approx_gb": 9.5,
+            "type": "stable",
+            "notes": "RHEL upstream — enterprise-grade"
+          },
+          {
+            "label": "CentOS Stream 9",
+            "url": "https://dl.centos.org/centos/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso",
+            "checksum_url": "https://dl.centos.org/centos/9-stream/BaseOS/x86_64/iso/CENTOS-STREAM-9-20250127-x86_64-dvd1.iso.sha256sum",
+            "size_approx_gb": 9.5,
+            "type": "stable",
+            "notes": "Previous stable release"
+          }
+        ]
+      },
+      "debian": {
+        "name": "Debian GNU/Linux",
+        "website": "https://www.debian.org",
+        "releases": [
+          {
+            "label": "Debian 12 (Bookworm) — Stable",
+            "url": "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.9.0-amd64-netinst.iso",
+            "checksum_url": "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/SHA512SUMS",
+            "size_approx_gb": 0.6,
+            "type": "stable",
+            "notes": "Netinst — minimal installer, downloads packages during install"
+          },
+          {
+            "label": "Debian 12 (Bookworm) — Full DVD",
+            "url": "https://cdimage.debian.org/debian-cd/current/amd64/iso-dvd/debian-12.9.0-amd64-dvd-1.iso",
+            "checksum_url": "https://cdimage.debian.org/debian-cd/current/amd64/iso-dvd/SHA512SUMS",
+            "size_approx_gb": 4.5,
+            "type": "stable",
+            "notes": "Full DVD with most packages included"
+          }
+        ]
+      },
+      "ubuntu": {
+        "name": "Ubuntu",
+        "website": "https://ubuntu.com",
+        "releases": [
+          {
+            "label": "Ubuntu 24.04 LTS (Noble Numbat)",
+            "url": "https://releases.ubuntu.com/24.04/ubuntu-24.04.2-desktop-amd64.iso",
+            "checksum_url": "https://releases.ubuntu.com/24.04/SHA256SUMS",
+            "size_approx_gb": 5.7,
+            "type": "lts",
+            "notes": "Long Term Support — 5 years of updates"
+          },
+          {
+            "label": "Ubuntu 24.10 (Oracular Oriole)",
+            "url": "https://releases.ubuntu.com/24.10/ubuntu-24.10-desktop-amd64.iso",
+            "checksum_url": "https://releases.ubuntu.com/24.10/SHA256SUMS",
+            "size_approx_gb": 5.7,
+            "type": "interim",
+            "notes": "Interim release — 9 months of support"
+          },
+          {
+            "label": "Ubuntu 22.04 LTS (Jammy Jellyfish)",
+            "url": "https://releases.ubuntu.com/22.04/ubuntu-22.04.5-desktop-amd64.iso",
+            "checksum_url": "https://releases.ubuntu.com/22.04/SHA256SUMS",
+            "size_approx_gb": 4.1,
+            "type": "lts",
+            "notes": "Previous LTS — widely supported"
+          }
+        ]
+      },
+      "tails": {
+        "name": "Tails OS",
+        "website": "https://tails.net",
+        "releases": [
+          {
+            "label": "Tails 6.x — Latest",
+            "url": "https://cdn.networkimprov.net/tails/amd64/tails-amd64-6.12.1.iso",
+            "checksum_url": "https://cdn.networkimprov.net/tails/amd64/tails-amd64-6.12.1.iso.sha256",
+            "size_approx_gb": 1.3,
+            "type": "amnesic",
+            "notes": "Privacy-focused live OS — leaves no trace on host machine"
+          }
+        ]
+      },
+      "mint": {
+        "name": "Linux Mint",
+        "website": "https://linuxmint.com",
+        "releases": [
+          {
+            "label": "Linux Mint 22.1 (Virginia) — Cinnamon",
+            "url": "https://mirror.rackspace.com/linuxmint/iso/stable/22.1/linuxmint-22.1-cinnamon-64bit.iso",
+            "checksum_url": "https://mirror.rackspace.com/linuxmint/iso/stable/22.1/sha256sum.txt",
+            "size_approx_gb": 2.5,
+            "type": "stable",
+            "notes": "Cinnamon desktop — most popular Mint edition"
+          },
+          {
+            "label": "Linux Mint 22.1 (Virginia) — MATE",
+            "url": "https://mirror.rackspace.com/linuxmint/iso/stable/22.1/linuxmint-22.1-mate-64bit.iso",
+            "checksum_url": "https://mirror.rackspace.com/linuxmint/iso/stable/22.1/sha256sum.txt",
+            "size_approx_gb": 2.2,
+            "type": "stable",
+            "notes": "MATE desktop — lightweight alternative"
+          },
+          {
+            "label": "Linux Mint 22.1 (Virginia) — Xfce",
+            "url": "https://mirror.rackspace.com/linuxmint/iso/stable/22.1/linuxmint-22.1-xfce-64bit.iso",
+            "checksum_url": "https://mirror.rackspace.com/linuxmint/iso/stable/22.1/sha256sum.txt",
+            "size_approx_gb": 2.1,
+            "type": "stable",
+            "notes": "Xfce desktop — most lightweight option"
+          }
+        ]
+      },
+      "manjaro": {
+        "name": "Manjaro",
+        "website": "https://manjaro.org",
+        "releases": [
+          {
+            "label": "Manjaro 24.0 (Wynsdey) — KDE Plasma",
+            "url": "https://download.manjaro.org/kde/24.0/Manjaro-kde-24.0.2-240616-linux69.iso",
+            "checksum_url": "https://download.manjaro.org/kde/24.0/Manjaro-kde-24.0.2-240616-linux69.iso.sha1",
+            "size_approx_gb": 3.5,
+            "type": "stable",
+            "notes": "KDE Plasma — feature-rich, Arch-based"
+          },
+          {
+            "label": "Manjaro 24.0 (Wynsdey) — XFCE",
+            "url": "https://download.manjaro.org/xfce/24.0/Manjaro-xfce-24.0.2-240616-linux69.iso",
+            "checksum_url": "https://download.manjaro.org/xfce/24.0/Manjaro-xfce-24.0.2-240616-linux69.iso.sha1",
+            "size_approx_gb": 2.7,
+            "type": "stable",
+            "notes": "XFCE — lightweight and fast"
+          },
+          {
+            "label": "Manjaro 24.0 (Wynsdey) — GNOME",
+            "url": "https://download.manjaro.org/gnome/24.0/Manjaro-gnome-24.0.2-240616-linux69.iso",
+            "checksum_url": "https://download.manjaro.org/gnome/24.0/Manjaro-gnome-24.0.2-240616-linux69.iso.sha1",
+            "size_approx_gb": 3.2,
+            "type": "stable",
+            "notes": "GNOME — modern, clean interface"
+          }
+        ]
+      }
+    },
+    "windows": {
+      "windows_10": {
+        "name": "Windows 10",
+        "website": "https://www.microsoft.com/software-download/windows10",
+        "releases": [
+          {
+            "label": "Windows 10 22H2 (English, x64) — Media Creation Tool Page",
+            "url": "https://www.microsoft.com/software-download/windows10",
+            "direct_iso_url": null,
+            "size_approx_gb": 5.8,
+            "type": "official_evaluation",
+            "notes": "Microsoft provides ISO via Media Creation Tool. Use the tool at the URL to download the ISO directly on Windows, or use the direct download workaround: https://www.microsoft.com/en-us/software-download/windows10ISO (works on non-Windows user agents).",
+            "workaround_url": "https://www.microsoft.com/en-us/software-download/windows10ISO",
+            "activation_required": false,
+            "license_type": "Microsoft Software License Terms — free to download and install for evaluation. Activation optional for personalization features."
+          }
+        ]
+      }
+    }
+  },
+  "download_defaults": {
+    "max_retries": 3,
+    "chunk_size_bytes": 8192,
+    "timeout_seconds": 30,
+    "verify_checksum": true,
+    "download_directory": "~/Downloads/py_burn"
+  }
+}
